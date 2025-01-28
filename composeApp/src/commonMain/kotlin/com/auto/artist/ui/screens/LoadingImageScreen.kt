@@ -22,6 +22,7 @@ import androidx.navigation.NavController
 import com.auto.artist.db.ImageEntity
 import com.auto.artist.ui.ImageViewModel
 import com.auto.artist.ui.Route
+import com.auto.artist.ui.UiState
 
 
 @Composable
@@ -30,9 +31,7 @@ fun LoadingImageScreen(
     viewModel: ImageViewModel,
     onImageReady: (ImageEntity) -> Unit
 ) {
-    val imageEntityState by viewModel.generatedImageUrl.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val emptyDataError by viewModel.emptyDataError.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(viewModel.launchedEffectKey()) {
         viewModel.createImage()
@@ -43,87 +42,89 @@ fun LoadingImageScreen(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        when {
-            emptyDataError -> {
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Missing data. Unable to create an image.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {
-                            navController.navigate(Route.Start.route) {
-                                popUpTo(Route.Start.route) {
-                                    inclusive = true
-                                }
+
+        if (uiState.isError()) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Missing data. Unable to create an image.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        navController.navigate(Route.Start.route) {
+                            popUpTo(Route.Start.route) {
+                                inclusive = true
                             }
                         }
-                    ) {
-                        Text("Return to Home")
                     }
-                }
-            }
-
-            isLoading -> {
-                Column(
-                    modifier = Modifier.align(Alignment.Center),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    CircularProgressIndicator()
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Creating your image, please wait...",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+                    Text("Return to Home")
                 }
             }
+        }
 
-            imageEntityState != null -> {
-                onImageReady(imageEntityState!!)
-                navController.navigate(Route.Image.route) {
-                    popUpTo(Route.Image.route) {
-                        inclusive = true
-                    }
+        if (uiState.isLoading()) {
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Creating your image, please wait...",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+
+        if (uiState.isReady()) {
+            val imageEntityState = (uiState as UiState.READY<ImageEntity>).data
+
+            onImageReady(imageEntityState)
+            navController.navigate(Route.Image.route) {
+                popUpTo(Route.Image.route) {
+                    inclusive = true
                 }
             }
+        }
 
-            else -> {
-                Column(
-                    modifier = Modifier.align(Alignment.Center),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "An unexpected error occurred.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {
-                            navController.navigate(Route.Start.route) {
-                                popUpTo(Route.Start.route) {
-                                    inclusive = true
-                                }
+        if (uiState.isError()) {
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "An unexpected error occurred.",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        navController.navigate(Route.Start.route) {
+                            popUpTo(Route.Start.route) {
+                                inclusive = true
                             }
                         }
-                    ) {
-                        Text("Return to Home")
                     }
+                ) {
+                    Text("Return to Home")
                 }
             }
         }
     }
 }
+
 
 
 

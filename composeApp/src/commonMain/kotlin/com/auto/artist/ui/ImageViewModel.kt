@@ -15,6 +15,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
@@ -30,52 +31,44 @@ class ImageViewModel(
     private var selectedMood: String = ""
 
 
-    private val _generatedImageUrl = MutableStateFlow<ImageEntity?>(null)
-    val generatedImageUrl = _generatedImageUrl.asStateFlow()
-
-
     fun launchedEffectKey(): Int = selectedColors.size + selectedStyle.length + selectedTheme.length
 
 
-    private val _generatedPrompt = MutableStateFlow("")
-    val generatedPrompt = _generatedPrompt.asStateFlow()
+    private var _uiState = MutableStateFlow<UiState>(UiState.EMPTY)
+    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
-
-    private val _emptyDataError = MutableStateFlow(false)
-    val emptyDataError = _emptyDataError.asStateFlow()
-
-    // Load existing image links (optional)
-    private val _existingImageLinksState = MutableStateFlow<UiState>(UiState.LOADING)
-    val existingImageLinksState: StateFlow<UiState> = _existingImageLinksState.asStateFlow()
+    var allImages: MutableStateFlow<List<ImageEntity>?> = MutableStateFlow(emptyList())
 
 
     init {
         loadExistingImageLinks()
     }
 
-    /**
-     * Load existing image links from the database
-     */
     private fun loadExistingImageLinks() {
-        _existingImageLinksState.value = UiState.LOADING
         viewModelScope.launch(Dispatchers.IO) {
-            val links = imageLinkDao.getAllImages()
+            val images = imageLinkDao.getAllImages()
 
             withContext(Dispatchers.Main) {
-                _existingImageLinksState.value = if (links.isEmpty()) {
-                    UiState.EMPTY
+
+                if (images.isEmpty()) {
+                    allImages.value = null
                 } else {
-                    UiState.READY(links)
-                }
-                links.forEach {
-                    initAudioForPrompt(it)
+                    allImages.value = images
+                    images.forEachIndexed { index, it ->
+                        println("Image-$index: $it")
+                        initAudioForPrompt(it)
+                    }
                 }
             }
         }
     }
+
+
+    fun updateUiState(uiState: UiState) {
+        println("Updating UiState to: $uiState")
+        _uiState.update { uiState }
+    }
+
 
     private suspend fun initAudioForPrompt(image: ImageEntity) {
 
@@ -111,39 +104,31 @@ class ImageViewModel(
 
 
     fun createImage() {
-
-        // log
-        println("dddd-> Creating image...")
+        println("Creating image...")
 
         viewModelScope.launch {
-            _isLoading.value = true
-            _generatedImageUrl.value = null
-            _generatedPrompt.value = ""
+            _uiState.value = UiState.LOADING
 
             // Prepare keywords from selected colors and style
             val keywords = getKeyWords()
-            println("Keywords: $keywords")
+            println("dddddd-> Keywords: $keywords")
             if (keywords.isEmpty()) {
-                _emptyDataError.value = true
+                _uiState.value = UiState.EMPTY
                 return@launch
-            } else {
-                _emptyDataError.value = false
             }
 
             // Generate a prompt using the keywords
             val promptResult = repo.askForOptimalPrompt(keywords)
 
             promptResult.onSuccess { prompt ->
-                _generatedPrompt.value = prompt
-
                 // log the prompt
-                println("-->  Prompt: $prompt")
+                println("Prompt: $prompt")
 
                 // Use the prompt to generate an image
                 val imageResult = repo.generateImage(prompt)
 
                 imageResult.onSuccess { imageUrl ->
-                    _isLoading.value = false
+                    println("onSuccess: $imageUrl")
                     saveImageLink(imageUrl, prompt) // Save the generated image link to the database
                 }.onError { error ->
                     handleError(error)
@@ -151,13 +136,13 @@ class ImageViewModel(
             }.onError { error ->
                 handleError(error)
             }
-
-            _isLoading.value = false
         }
     }
 
 
     private fun handleError(error: DataError) {
+        println("handleError: $error")
+
         when (error) {
             DataError.Remote.NO_INTERNET -> {
                 // Handle no internet connection case
@@ -224,7 +209,7 @@ class ImageViewModel(
             val timestamp = Clock.System.now().toEpochMilliseconds()
             val imageLink = ImageEntity(url = url, prompt = prompt, timestamp = timestamp)
             imageLinkDao.insertImageLink(imageLink)
-            _generatedImageUrl.value = imageLink
+            _uiState.update { UiState.READY(imageLink) }
             loadExistingImageLinks()
         }
     }

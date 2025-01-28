@@ -11,4 +11,7 @@ sealed class UiState {
     fun isReady() = this is READY<*>
     fun isError() = this is ERROR
 
+    fun <T> getReadyData(): T? = (this as? READY<T>)?.data
+
 }
+

@@ -40,7 +40,6 @@ import coil3.compose.AsyncImage
 import com.auto.artist.db.ImageEntity
 import com.auto.artist.ui.ImageViewModel
 import com.auto.artist.ui.Route
-import com.auto.artist.ui.UiState
 
 
 @Composable
@@ -50,9 +49,10 @@ fun HomeScreen(
     onImageClick: (ImageEntity) -> Unit
 ) {
 
-    val generatedImagesState = viewModel.existingImageLinksState.collectAsState()
+    val imagesState = viewModel.allImages.collectAsState()
 
-    if (generatedImagesState.value.isLoading()) {
+
+    if (imagesState.value?.isEmpty() == true) {
         Box(
             modifier = Modifier.fillMaxSize()
                 .background(Color.White)
@@ -61,10 +61,18 @@ fun HomeScreen(
         ) {
             CircularProgressIndicator()
         }
-
     }
 
-    if (generatedImagesState.value.isEmpty()) {
+    if (viewModel.allImages.value?.isNotEmpty() == true) {
+        showGallery(
+            navController = navController,
+            generatedImages = viewModel.allImages.value!!,
+            viewModel = viewModel,
+            onImageClick = onImageClick
+        )
+    }
+
+    if (imagesState.value == null) {
         Column(
             modifier = Modifier.fillMaxSize()
                 .padding(8.dp),
@@ -88,17 +96,6 @@ fun HomeScreen(
             }
 
         }
-    }
-    if (generatedImagesState.value.isReady()) {
-        val readyState = generatedImagesState.value as UiState.READY<List<ImageEntity>>
-        val generatedImages = readyState.data
-
-        showGallery(
-            navController = navController,
-            generatedImages = generatedImages,
-            viewModel = viewModel,
-            onImageClick = onImageClick
-        )
     }
 
 
@@ -145,7 +142,7 @@ fun showGallery(
                         .combinedClickable(
                             onClick = {
                                 onImageClick(image)
-                                navController.navigate(Route.Image.route)
+
                             },
                             onLongClick = {
                                 setSelectedImageId(image.id)

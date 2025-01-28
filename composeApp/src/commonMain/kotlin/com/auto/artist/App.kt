@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -18,6 +21,7 @@ import com.auto.artist.ui.AudioViewModel
 import com.auto.artist.ui.ImageViewModel
 import com.auto.artist.ui.Route
 import com.auto.artist.ui.TopNavigationBar
+import com.auto.artist.ui.UiState
 import com.auto.artist.ui.back
 import com.auto.artist.ui.imageRouteNext
 import com.auto.artist.ui.screens.ColorScreen
@@ -27,8 +31,6 @@ import com.auto.artist.ui.screens.ImageScreen
 import com.auto.artist.ui.screens.LoadingImageScreen
 import com.auto.artist.ui.screens.MoodScreen
 import com.auto.artist.ui.screens.StyleScreen
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -48,16 +50,13 @@ fun MainNavGraph(
     audioViewModel: AudioViewModel = koinViewModel(),
 ) {
     val navController = rememberNavController()
-    val selectedImage = MutableStateFlow<ImageEntity?>(null)
-
 
     NavHost(
         navController = navController,
         startDestination = Route.Start.route
     ) {
         composable(Route.Start.route) {
-
-            selectedImage.update { null }
+            println("ddd -> Start route")
             Scaffold { paddingValues ->
                 Box(
                     modifier = Modifier
@@ -68,8 +67,10 @@ fun MainNavGraph(
                         navController = navController,
                         viewModel = imageViewModel,
                         onImageClick = { imageEntity ->
-                            selectedImage.update { imageEntity }
-
+                            println("ddd -> onImageClick prompt: ${imageEntity.prompt}")
+                            imageViewModel.updateUiState(UiState.READY(imageEntity))
+                            println("UiState updated to READY with image: $imageEntity")
+                            navController.navigate(Route.Image.route)
                         }
                     )
                 }
@@ -85,7 +86,6 @@ fun MainNavGraph(
             ) {
                 ColorScreen(navController = navController, viewModel = imageViewModel)
             }
-            // ColorScreen(navController = navController, viewModel = viewModel)
         }
 
         composable(Route.Mode.route) {
@@ -120,6 +120,7 @@ fun MainNavGraph(
 
         }
         composable(Route.Final.route) {
+            println("LoadingImageScreen route")
 
             Scaffold { paddingValues ->
                 Box(
@@ -131,7 +132,7 @@ fun MainNavGraph(
                         navController = navController,
                         viewModel = imageViewModel,
                         onImageReady = { imageEntity ->
-                            selectedImage.update { imageEntity }
+                            imageViewModel.updateUiState(UiState.READY(imageEntity))
 
                         }
                     )
@@ -141,14 +142,43 @@ fun MainNavGraph(
         }
 
         composable(Route.Image.route) {
-            if (selectedImage.value == null) {
-                CircularProgressIndicator()
-            } else {
-                ImageScreen(
-                    image = selectedImage.value!!,
-                    navController = navController,
-                    audioViewModel = audioViewModel
-                )
+            val state = imageViewModel.uiState.collectAsState()
+
+            when (state.value) {
+                is UiState.LOADING -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                is UiState.READY<*> -> {
+                    val image = state.value.getReadyData<ImageEntity>()
+                    Scaffold { paddingValues ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(paddingValues)
+                        ) {
+                            ImageScreen(
+                                image = image!!,
+                                navController = navController,
+                                audioViewModel = audioViewModel
+                            )
+                        }
+                    }
+                }
+
+                else -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Error")
+                    }
+                }
             }
         }
 
