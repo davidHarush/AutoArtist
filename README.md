@@ -2,19 +2,25 @@
 
 <p>This is a Kotlin Multiplatform project targeting Android and iOS.</p>
 
-<h2>Project Structure</h2>
-<ul>
-  <li><code>/composeApp</code> contains code shared across the Compose Multiplatform applications.
-    <ul>
-      <li><code>commonMain</code>: Code common for all targets.</li>
-      <li>Other platform-specific folders, like <code>androidMain</code> and <code>iosMain</code>, contain code compiled only for the respective platform. For example, platform-specific libraries like Apple’s CoreCrypto would be added to <code>iosMain</code>.</li>
-    </ul>
-  </li>
-  <li><code>/iosApp</code> contains the iOS application entry point. Even if the UI is shared with Compose Multiplatform, this folder is required for the iOS-specific app logic and SwiftUI integrations.</li>
-  <li><code>/androidApp</code> contains the Android application entry point and any Android-specific implementation.</li>
-</ul>
+### How It Works
+<ol>
+  <li>User answers a series of questions.</li>
+  <li>Answers are sent to GPT API for a descriptive image prompt.</li>
+  <li>Prompt is sent to DALL-E 3 API to generate an image.</li>
+  <li>Prompt is also sent to a text-to-audio service to create an MP4 file.</li>
+  <li>Generated image and MP4 file are stored in Room for later viewing.</li>
+</ol>
 
-<h2>Key Features</h2>
+### Screenshots
+
+<p float="left">
+  <img src="art/Image3.jpeg" width="200" />
+  <img src="art/Image1.jpeg" width="200" />
+  <img src="art/Image2.jpeg" width="200" /> 
+</p>
+
+
+### Key Features
 <ol>
   <li><strong>Compose Multiplatform UI:</strong> Unified user interface for Android and iOS.</li>
   <li><strong>Dynamic Questionnaires:</strong> Users answer questions to define preferences (e.g., colors, themes).</li>
@@ -25,14 +31,7 @@
   <li><strong>Dependency Injection:</strong> Koin is used for managing dependencies efficiently across modules.</li>
 </ol>
 
-<h2>How It Works</h2>
-<ol>
-  <li>User answers a series of questions.</li>
-  <li>Answers are sent to GPT API for a descriptive image prompt.</li>
-  <li>Prompt is sent to DALL-E 3 API to generate an image.</li>
-  <li>Prompt is also sent to a text-to-audio service to create an MP4 file.</li>
-  <li>Generated image and MP4 file are stored in Room for later viewing.</li>
-</ol>
+
 
 <h2>Technologies Used</h2>
 <ul>
