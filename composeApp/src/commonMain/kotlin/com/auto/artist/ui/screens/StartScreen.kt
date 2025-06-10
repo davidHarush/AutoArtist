@@ -57,22 +57,13 @@ fun HomeScreen(
     val tabs = listOf("Create", "Gallery", "History")
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TabRow(selectedTabIndex = selectedTab) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTab == index,
-                    onClick = { selectedTab = index },
-                    text = { Text(title) }
-                )
-            }
-        }
-
-        when (selectedTab) {
-            0 -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(8.dp),
+        Box(modifier = Modifier.weight(1f)) {
+            when (selectedTab) {
+                0 -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(8.dp),
                     verticalArrangement = Arrangement.Center
                 ) {
                     Spacer(modifier = Modifier.height(8.dp))
@@ -94,12 +85,12 @@ fun HomeScreen(
                 }
             }
 
-            1 -> {
-                if (imagesState.value?.isEmpty() == true) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.White)
+                1 -> {
+                    if (imagesState.value?.isEmpty() == true) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.White)
                             .padding(8.dp),
                         contentAlignment = Alignment.Center
                     ) {
@@ -123,16 +114,27 @@ fun HomeScreen(
                     ) {
                         Text("No images yet")
                     }
+                    }
+                }
+
+                2 -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Coming soon...")
+                    }
                 }
             }
+        }
 
-            2 -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Coming soon...")
-                }
+        TabRow(selectedTabIndex = selectedTab) {
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTab == index,
+                    onClick = { selectedTab = index },
+                    text = { Text(title) }
+                )
             }
         }
     }
