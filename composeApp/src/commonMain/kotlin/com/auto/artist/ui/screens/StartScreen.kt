@@ -26,9 +26,6 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.icons.Icons
-import androidx.compose.material3.icons.filled.Add
-import androidx.compose.material3.icons.filled.Collections
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +38,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.auto.artist.db.ImageEntity
@@ -48,6 +48,7 @@ import com.auto.artist.ui.ImageViewModel
 import com.auto.artist.ui.Route
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavController,
@@ -65,7 +66,7 @@ fun HomeScreen(
                 NavigationBarItem(
                     selected = true,
                     onClick = {},
-                    icon = { Icon(Icons.Filled.Collections, contentDescription = "Gallery") },
+                    icon = { Icon(Icons.Filled.Favorite, contentDescription = "Gallery") },
                     label = { Text("Gallery") }
                 )
                 NavigationBarItem(
