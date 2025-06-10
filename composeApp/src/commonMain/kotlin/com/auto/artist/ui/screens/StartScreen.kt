@@ -32,8 +32,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Collections
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -56,10 +59,32 @@ fun HomeScreen(
 ) {
     val imagesState = viewModel.allImages.collectAsState()
     var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("Create", "Gallery", "History")
+    val tabs = listOf(
+        "Create" to Icons.Default.Add,
+        "Gallery" to Icons.Default.Collections,
+        "History" to Icons.Default.History
+    )
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Box(modifier = Modifier.weight(1f)) {
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            NavigationBar {
+                tabs.forEachIndexed { index, (title, icon) ->
+                    NavigationBarItem(
+                        selected = selectedTab == index,
+                        onClick = { selectedTab = index },
+                        icon = { Icon(icon, contentDescription = title) },
+                        label = { Text(title) }
+                    )
+                }
+            }
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
             when (selectedTab) {
                 0 -> {
                     Column(
@@ -127,16 +152,6 @@ fun HomeScreen(
                         Text("Coming soon...")
                     }
                 }
-            }
-        }
-
-        TabRow(selectedTabIndex = selectedTab) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedTab == index,
-                    onClick = { selectedTab = index },
-                    text = { Text(title) }
-                )
             }
         }
     }
