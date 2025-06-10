@@ -57,24 +57,16 @@ fun MainNavGraph(
     ) {
         composable(Route.Start.route) {
             println("ddd -> Start route")
-            Scaffold { paddingValues ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                ) {
-                    HomeScreen(
-                        navController = navController,
-                        viewModel = imageViewModel,
-                        onImageClick = { imageEntity ->
-                            println("ddd -> onImageClick prompt: ${imageEntity.prompt}")
-                            imageViewModel.updateUiState(UiState.READY(imageEntity))
-                            println("UiState updated to READY with image: $imageEntity")
-                            navController.navigate(Route.Image.route)
-                        }
-                    )
+            HomeScreen(
+                navController = navController,
+                viewModel = imageViewModel,
+                onImageClick = { imageEntity ->
+                    println("ddd -> onImageClick prompt: ${imageEntity.prompt}")
+                    imageViewModel.updateUiState(UiState.READY(imageEntity))
+                    println("UiState updated to READY with image: $imageEntity")
+                    navController.navigate(Route.Image.route)
                 }
-            }
+            )
         }
 
         composable(Route.Color.route) {
