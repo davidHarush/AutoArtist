@@ -57,28 +57,7 @@ fun HomeScreen(
 ) {
 
     val imagesState = viewModel.allImages.collectAsState()
-
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = { CenterAlignedTopAppBar(title = { Text("Auto Artist") }) },
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = true,
-                    onClick = {},
-                    icon = { Icon(Icons.Filled.Favorite, contentDescription = "Gallery") },
-                    label = { Text("Gallery") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = { navController.navigate(Route.Color.route) },
-                    icon = { Icon(Icons.Filled.Add, contentDescription = "New") },
-                    label = { Text("Create") }
-                )
-            }
-        }
-    ) { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+        Box(modifier = Modifier.fillMaxSize()) {
             when {
                 imagesState.value?.isEmpty() == true -> {
                     Box(
@@ -111,8 +90,11 @@ fun HomeScreen(
                 }
             }
         }
-    }
 }
+
+
+
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun showGallery(
