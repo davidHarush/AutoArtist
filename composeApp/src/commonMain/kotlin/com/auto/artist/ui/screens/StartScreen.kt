@@ -26,8 +26,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,57 +52,90 @@ fun HomeScreen(
     viewModel: ImageViewModel,
     onImageClick: (ImageEntity) -> Unit
 ) {
-
     val imagesState = viewModel.allImages.collectAsState()
+    var selectedTab by remember { mutableStateOf(0) }
+    val tabs = listOf("Create", "Gallery", "History")
 
-
-    if (imagesState.value?.isEmpty() == true) {
-        Box(
-            modifier = Modifier.fillMaxSize()
-                .background(Color.White)
-                .padding(8.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator()
+    Column(modifier = Modifier.fillMaxSize()) {
+        TabRow(selectedTabIndex = selectedTab) {
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTab == index,
+                    onClick = { selectedTab = index },
+                    text = { Text(title) }
+                )
+            }
         }
-    }
 
-    if (viewModel.allImages.value?.isNotEmpty() == true) {
-        showGallery(
-            navController = navController,
-            generatedImages = viewModel.allImages.value!!,
-            viewModel = viewModel,
-            onImageClick = onImageClick
-        )
-    }
-
-    if (imagesState.value == null) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-                .padding(8.dp),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Welcome to Auto Artist",
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                onClick = {
-                    navController.navigate(Route.Color.route)
-                },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text("Create New Image")
+        when (selectedTab) {
+            0 -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Welcome to Auto Artist",
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = {
+                            navController.navigate(Route.Color.route)
+                        },
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    ) {
+                        Text("Create New Image")
+                    }
+                }
             }
 
+            1 -> {
+                if (imagesState.value?.isEmpty() == true) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.White)
+                            .padding(8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                if (viewModel.allImages.value?.isNotEmpty() == true) {
+                    showGallery(
+                        navController = navController,
+                        generatedImages = viewModel.allImages.value!!,
+                        viewModel = viewModel,
+                        onImageClick = onImageClick
+                    )
+                }
+
+                if (imagesState.value == null) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No images yet")
+                    }
+                }
+            }
+
+            2 -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Coming soon...")
+                }
+            }
         }
     }
-
-
 }
 
 @OptIn(ExperimentalFoundationApi::class)
