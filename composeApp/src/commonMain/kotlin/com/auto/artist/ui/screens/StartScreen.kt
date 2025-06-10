@@ -30,6 +30,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,6 +48,7 @@ import coil3.compose.AsyncImage
 import com.auto.artist.db.ImageEntity
 import com.auto.artist.ui.ImageViewModel
 import com.auto.artist.ui.Route
+import com.auto.artist.ui.screens.HistoryScreen
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -156,6 +159,68 @@ fun showGallery(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun StartTabsScreen(
+    navController: NavController,
+    viewModel: ImageViewModel,
+    onImageClick: (ImageEntity) -> Unit,
+) {
+    var selectedTab by remember { mutableStateOf(0) }
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = { CenterAlignedTopAppBar(title = { Text("Auto Artist") }) },
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0 },
+                    icon = { Icon(Icons.Default.Favorite, contentDescription = "Gallery") },
+                    label = { Text("Gallery") }
+                )
+                NavigationBarItem(
+                    selected = selectedTab == 1,
+                    onClick = {
+                        selectedTab = 1
+                        navController.navigate(Route.Color.route)
+                    },
+                    icon = { Icon(Icons.Default.Add, contentDescription = "New Image") },
+                    label = { Text("New Image") }
+                )
+                NavigationBarItem(
+                    selected = selectedTab == 2,
+                    onClick = { selectedTab = 2 },
+                    icon = { Icon(Icons.Default.Favorite, contentDescription = "History") },
+                    label = { Text("History") }
+                )
+            }
+        }
+    ) { paddingValues ->
+        when (selectedTab) {
+            0 -> Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                HomeScreen(
+                    navController = navController,
+                    viewModel = viewModel,
+                    onImageClick = onImageClick
+                )
+            }
+
+            2 -> Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                HistoryScreen()
             }
         }
     }
