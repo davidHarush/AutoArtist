@@ -70,7 +70,7 @@ fun HomeScreen(
                 }
 
                 viewModel.allImages.value?.isNotEmpty() == true -> {
-                    showGallery(
+                    Gallery(
                         navController = navController,
                         generatedImages = viewModel.allImages.value!!,
                         viewModel = viewModel,
@@ -100,7 +100,7 @@ fun HomeScreen(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun showGallery(
+fun Gallery(
     navController: NavController,
     generatedImages: List<ImageEntity>,
     viewModel: ImageViewModel,
@@ -110,17 +110,21 @@ fun showGallery(
 
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Fixed(2),
-        verticalItemSpacing = 8.dp,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxSize().padding(8.dp)
+        verticalItemSpacing = 2.dp,
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+        modifier = Modifier.fillMaxSize().padding(2.dp)
     ) {
         items(generatedImages.size) { index ->
             val image = generatedImages[index]
-            val aspect = if (index % 3 == 0) 1.3f else 1f
+            val aspect = if (index % 5 == 0)
+                1.4f
+            else if (index % 3 == 0)
+                1.2f
+            else 1f
 
             Card(
                 modifier = Modifier
-                    .padding(4.dp)
+                    .padding(1.dp)
                     .combinedClickable(
                         onClick = { onImageClick(image) },
                         onLongClick = { setSelectedImageId(image.id) }
