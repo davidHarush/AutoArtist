@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -77,37 +78,40 @@ fun ImageScreen(
         }
     )
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Your Image") },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            audioViewModel.stopAudio()
-                            navController.navigate(Route.Start.route) {
-                                popUpTo(Route.Start.route) { inclusive = true }
-                            }
-                        }
-                    ) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            MaterialTheme.colorScheme.primaryContainer,
-                            MaterialTheme.colorScheme.background
-                        )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        MaterialTheme.colorScheme.background
                     )
                 )
-                .padding(paddingValues),
+            )
+            .statusBarsPadding(),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CenterAlignedTopAppBar(
+            title = { Text("Your Image") },
+            navigationIcon = {
+                IconButton(
+                    onClick = {
+                        audioViewModel.stopAudio()
+                        navController.navigate(Route.Start.route) {
+                            popUpTo(Route.Start.route) { inclusive = true }
+                        }
+                    }
+                ) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            }
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -133,6 +137,7 @@ fun ImageScreen(
                     Image(
                         painter = painter,
                         contentDescription = "Generated Image",
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
