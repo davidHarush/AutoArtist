@@ -26,7 +26,7 @@ import com.auto.artist.ui.back
 import com.auto.artist.ui.imageRouteNext
 import com.auto.artist.ui.screens.ColorScreen
 import com.auto.artist.ui.screens.ConceptsScreen
-import com.auto.artist.ui.screens.HomeScreen
+import com.auto.artist.ui.screens.StartTabsScreen
 import com.auto.artist.ui.screens.ImageScreen
 import com.auto.artist.ui.screens.LoadingImageScreen
 import com.auto.artist.ui.screens.MoodScreen
@@ -57,24 +57,16 @@ fun MainNavGraph(
     ) {
         composable(Route.Start.route) {
             println("ddd -> Start route")
-            Scaffold { paddingValues ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                ) {
-                    HomeScreen(
-                        navController = navController,
-                        viewModel = imageViewModel,
-                        onImageClick = { imageEntity ->
-                            println("ddd -> onImageClick prompt: ${imageEntity.prompt}")
-                            imageViewModel.updateUiState(UiState.READY(imageEntity))
-                            println("UiState updated to READY with image: $imageEntity")
-                            navController.navigate(Route.Image.route)
-                        }
-                    )
+            StartTabsScreen(
+                navController = navController,
+                viewModel = imageViewModel,
+                onImageClick = { imageEntity ->
+                    println("ddd -> onImageClick prompt: ${imageEntity.prompt}")
+                    imageViewModel.updateUiState(UiState.READY(imageEntity))
+                    println("UiState updated to READY with image: $imageEntity")
+                    navController.navigate(Route.Image.route)
                 }
-            }
+            )
         }
 
         composable(Route.Color.route) {
