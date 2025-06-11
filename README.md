@@ -8,7 +8,7 @@
   <li>Answers are sent to GPT API for a descriptive image prompt.</li>
   <li>Prompt is sent to DALL-E 3 API to generate an image.</li>
   <li>Prompt is also sent to a text-to-audio service to create an MP4 file.</li>
-  <li>Generated image and MP4 file are stored in Room for later viewing.</li>
+  <li>The generated image is stored in Room, while the MP4 file is written to local storage for later viewing.</li>
 </ol>
 
 ### Screenshots
@@ -27,7 +27,7 @@
   <li><strong>AI-Powered Prompts:</strong> User inputs are sent to GPT API to generate detailed image prompts.</li>
   <li><strong>DALL-E 3 Integration:</strong> Generated prompts are used to create unique images with DALL-E 3.</li>
   <li><strong>Text-to-Audio:</strong> Prompts are converted into MP4 audio files using a text-to-audio service.</li>
-  <li><strong>Room Database:</strong> Prompts, images, and audio files are stored locally for a gallery view.</li>
+  <li><strong>Room Database:</strong> Prompts and images are stored in Room for a gallery view. Audio files are saved to local storage.</li>
   <li><strong>Dependency Injection:</strong> Koin is used for managing dependencies efficiently across modules.</li>
 </ol>
 
@@ -40,7 +40,7 @@
   <li><strong>OpenAI GPT API:</strong> To generate descriptive prompts based on user input.</li>
   <li><strong>DALL-E 3 API:</strong> To generate images from the prompts.</li>
   <li><strong>Text-to-Audio API:</strong> To convert prompts into audio files.</li>
-  <li><strong>Room Database:</strong> To store prompts, images, and audio files for later use.</li>
+  <li><strong>Room Database:</strong> Persists prompts and images for later use, while audio files are kept in local storage.</li>
   <li><strong>Koin:</strong> For dependency injection and efficient module management.</li>
 </ul>
 
