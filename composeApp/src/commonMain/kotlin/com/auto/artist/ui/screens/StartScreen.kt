@@ -168,6 +168,7 @@ fun Gallery(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StartTabsScreen(
     navController: NavController,
