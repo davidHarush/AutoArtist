@@ -17,8 +17,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,6 +38,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -40,6 +52,7 @@ import com.auto.artist.ui.AudioViewModel
 import com.auto.artist.ui.Route
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImageScreen(
     navController: NavController,
@@ -53,78 +66,101 @@ fun ImageScreen(
 
     var showLoadingImage = remember { true }
 
-
     val painter = rememberAsyncImagePainter(
         model = image.url,
         onState = { state ->
-            println("Image state: $state")
             showLoadingImage = when (state) {
-                is AsyncImagePainter.State.Success -> {
-                    false
-                }
-
-                is AsyncImagePainter.State.Loading -> {
-                    true
-                }
-
-                else -> {
-                    false
-                }
-
+                is AsyncImagePainter.State.Success -> false
+                is AsyncImagePainter.State.Loading -> true
+                else -> false
             }
         }
     )
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Your Image") },
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            audioViewModel.stopAudio()
+                            navController.navigate(Route.Start.route) {
+                                popUpTo(Route.Start.route) { inclusive = true }
+                            }
+                        }
+                    ) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            MaterialTheme.colorScheme.background
+                        )
+                    )
+                )
+                .padding(paddingValues),
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // round image with loading indicator
-
-            Box(
+            Card(
                 modifier = Modifier
-                    .fillMaxWidth().clip(RoundedCornerShape(20.dp))
-                    .weight(1f),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(16.dp)
+                    .shadow(8.dp, RoundedCornerShape(20.dp)),
+                shape = RoundedCornerShape(20.dp)
             ) {
-
-                if (showLoadingImage) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(48.dp),
-                        color = MaterialTheme.colorScheme.secondary,
-                        strokeWidth = 2.dp
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (showLoadingImage) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(48.dp),
+                            color = MaterialTheme.colorScheme.secondary,
+                            strokeWidth = 2.dp
+                        )
+                    }
+                    Image(
+                        painter = painter,
+                        contentDescription = "Generated Image",
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
-                Image(
-                    painter = painter,
-                    contentDescription = "Generated Image",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
             }
 
             if (getPlatform().isAndroid) {
                 AudioControls(viewModel = audioViewModel, image = image)
             }
 
-            Text(
-                text = image.prompt,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.primary,
+            Card(
                 modifier = Modifier
                     .padding(horizontal = 16.dp)
                     .fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = image.prompt,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             OutlinedButton(
                 onClick = {
@@ -133,7 +169,9 @@ fun ImageScreen(
                         popUpTo(Route.Start.route) { inclusive = true }
                     }
                 },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 16.dp)
                     .height(48.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = MaterialTheme.colorScheme.surface,
@@ -142,7 +180,6 @@ fun ImageScreen(
             ) {
                 Text("Exit", style = MaterialTheme.typography.bodyLarge)
             }
-
         }
     }
 }
@@ -159,22 +196,12 @@ fun AudioControls(viewModel: AudioViewModel, image: ImageEntity) {
     ) {
 
         if (audioState is AudioResult.READY) {
-
-
-            Button(
-                onClick = {
-                    viewModel.stopAudio()
-                },
-            ) {
-                Text("Stop")
+            IconButton(onClick = { viewModel.stopAudio() }) {
+                Icon(Icons.Default.Stop, contentDescription = "Stop")
             }
 
-            Button(
-                onClick = {
-                    viewModel.playAudio(image)
-                },
-            ) {
-                Text("Play")
+            IconButton(onClick = { viewModel.playAudio(image) }) {
+                Icon(Icons.Default.PlayArrow, contentDescription = "Play")
             }
         }
 
