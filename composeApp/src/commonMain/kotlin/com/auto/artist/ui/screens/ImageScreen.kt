@@ -13,13 +13,28 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -27,7 +42,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -40,6 +58,7 @@ import com.auto.artist.ui.AudioViewModel
 import com.auto.artist.ui.Route
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImageScreen(
     navController: NavController,
@@ -53,96 +72,141 @@ fun ImageScreen(
 
     var showLoadingImage = remember { true }
 
-
     val painter = rememberAsyncImagePainter(
         model = image.url,
         onState = { state ->
-            println("Image state: $state")
             showLoadingImage = when (state) {
-                is AsyncImagePainter.State.Success -> {
-                    false
-                }
-
-                is AsyncImagePainter.State.Loading -> {
-                    true
-                }
-
-                else -> {
-                    false
-                }
-
+                is AsyncImagePainter.State.Success -> false
+                is AsyncImagePainter.State.Loading -> true
+                else -> false
             }
         }
     )
 
+    val scrollState = rememberScrollState()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // round image with loading indicator
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth().clip(RoundedCornerShape(20.dp))
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-
-                if (showLoadingImage) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(48.dp),
-                        color = MaterialTheme.colorScheme.secondary,
-                        strokeWidth = 2.dp
+            .background(
+                Brush.verticalGradient(
+                    listOf(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        MaterialTheme.colorScheme.background
                     )
-                }
-                Image(
-                    painter = painter,
-                    contentDescription = "Generated Image",
+                )
+            )
+            .statusBarsPadding()
+    ) {
+        Scaffold(
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = { Text("Your Image") },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                     // Color.transparent,
+                        containerColor = Color.Transparent,
+                        titleContentColor = Color.Black,
+                    ),
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                audioViewModel.stopAudio()
+                                navController.navigate(Route.Start.route) {
+                                    popUpTo(Route.Start.route) { inclusive = true }
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
+                    }
+                )
+            },
+            bottomBar = {
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                )
-            }
-
-            if (getPlatform().isAndroid) {
-                AudioControls(viewModel = audioViewModel, image = image)
-            }
-
-            Text(
-                text = image.prompt,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedButton(
-                onClick = {
-                    audioViewModel.stopAudio()
-                    navController.navigate(Route.Start.route) {
-                        popUpTo(Route.Start.route) { inclusive = true }
+                        .padding(horizontal = 24.dp, vertical = 16.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = {
+                            audioViewModel.stopAudio()
+                            navController.navigate(Route.Start.route) {
+                                popUpTo(Route.Start.route) { inclusive = true }
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        )
+                    ) {
+                        Text("Exit", style = MaterialTheme.typography.bodyLarge)
                     }
-                },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp)
-                    .height(48.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.onSurface
-                )
-            ) {
-                Text("Exit", style = MaterialTheme.typography.bodyLarge)
+                }
             }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize()
+                    .verticalScroll(scrollState),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .shadow(8.dp, RoundedCornerShape(20.dp)),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (showLoadingImage) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(48.dp),
+                                color = MaterialTheme.colorScheme.secondary,
+                                strokeWidth = 2.dp
+                            )
+                        }
+                        Image(
+                            painter = painter,
+                            contentDescription = "Generated Image",
+                            contentScale = ContentScale.FillWidth,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
 
+                if (getPlatform().isAndroid) {
+                    AudioControls(viewModel = audioViewModel, image = image)
+                }
+
+                Card(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = image.prompt,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
     }
 }
@@ -159,22 +223,12 @@ fun AudioControls(viewModel: AudioViewModel, image: ImageEntity) {
     ) {
 
         if (audioState is AudioResult.READY) {
-
-
-            Button(
-                onClick = {
-                    viewModel.stopAudio()
-                },
-            ) {
-                Text("Stop")
+            IconButton(onClick = { viewModel.stopAudio() }) {
+                Icon(Icons.Default.Clear, contentDescription = "Stop")
             }
 
-            Button(
-                onClick = {
-                    viewModel.playAudio(image)
-                },
-            ) {
-                Text("Play")
+            IconButton(onClick = { viewModel.playAudio(image) }) {
+                Icon(Icons.Default.PlayArrow, contentDescription = "Play")
             }
         }
 

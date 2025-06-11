@@ -148,11 +148,9 @@ fun MainNavGraph(
 
                 is UiState.READY<*> -> {
                     val image = state.value.getReadyData<ImageEntity>()
-                    Scaffold { paddingValues ->
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(paddingValues)
                         ) {
                             ImageScreen(
                                 image = image!!,
@@ -160,7 +158,6 @@ fun MainNavGraph(
                                 audioViewModel = audioViewModel
                             )
                         }
-                    }
                 }
 
                 else -> {
